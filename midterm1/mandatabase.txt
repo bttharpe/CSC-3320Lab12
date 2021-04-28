@@ -1,0 +1,1055 @@
+NAME
+       man - format and display the on-line manual pages
+
+SYNOPSIS
+       man [-acdfFhkKtwW] [--path] [-m system] [-p string] [-C config_file] [-M pathlist] [-P pager] [-B browser] [-H htmlpager] [-S section_list] [section] name ...
+
+DESCRIPTION
+       man  formats  and displays the on-line manual pages.  If you specify section, man only looks in that section of the manual.  name is normally the name of the manual page, which is typically the name of a command, function, or file.  However, if name contains a
+       slash (/) then man interprets it as a file specification, so that you can do man ./foo.5 or even man /cd/foo/bar.1.gz.
+
+       See below for a description of where man looks for the manual page files.
+
+MANUAL SECTIONS
+       The standard sections of the manual include:
+
+       1      User Commands
+
+       2      System Calls
+
+       3      C Library Functions
+
+       4      Devices and Special Files
+
+       5      File Formats and Conventions
+
+       6      Games et. Al.
+
+       7      Miscellanea
+
+       8      System Administration tools and Deamons
+
+       Distributions customize the manual section to their specifics, which often include additional sections.
+
+OPTIONS
+       -C  config_file
+              Specify the configuration file to use; the default is /private/etc/man.conf.  (See man.conf(5).)
+
+       -M  path
+              Specify the list of directories to search for man pages.  Separate the directories with colons.  An empty list is the same as not specifying -M at all.  See SEARCH PATH FOR MANUAL PAGES.
+
+       -P  pager
+              Specify which pager to use.  This option overrides the MANPAGER environment variable, which in turn overrides the PAGER variable.  By default, man uses /usr/bin/less -is.
+
+       -B     Specify which browser to use on HTML files.  This option overrides the BROWSER environment variable. By default, man uses /usr/bin/less-is,
+
+       -H     Specify a command that renders HTML files as text.  This option overrides the HTMLPAGER environment variable. By default, man uses /bin/cat,
+
+       -S  section_list
+              List is a colon separated list of manual sections to search.  This option overrides the MANSECT environment variable.
+
+       -a     By default, man will exit after displaying the first manual page it finds.  Using this option forces man to display all the manual pages that match name, not just the first.
+
+       -c     Reformat the source man page, even when an up-to-date cat page exists.  This can be meaningful if the cat page was formatted for a screen with a different number of columns, or if the preformatted page is corrupted.
+
+       -d     Don't actually display the man pages, but do print gobs of debugging information.
+
+       -D     Both display and print debugging info.
+
+       -f     Equivalent to whatis.
+
+       -F or --preformat
+              Format only - do not display.
+
+       -h     Print a help message and exit.
+
+       -k     Equivalent to apropos.
+
+       -K     Search for the specified string in *all* man pages. Warning: this is probably very slow! It helps to specify a section.  (Just to give a rough idea, on my machine this takes about a minute per 500 man pages.)
+
+       -m  system
+              Specify an alternate set of man pages to search based on the system name given.
+
+       -p  string
+              Specify the sequence of preprocessors to run before nroff or troff.  Not all installations will have a full set of preprocessors.  Some of the preprocessors and the letters used to designate them are: eqn (e), grap (g), pic (p),  tbl  (t),  vgrind  (v),
+              refer (r).  This option overrides the MANROFFSEQ environment variable.
+
+       -t     Use /usr/bin/groff -Tps -mandoc -c to format the manual page, passing the output to stdout.  The default output format of /usr/bin/groff -Tps -mandoc -c is Postscript, refer to the manual page of /usr/bin/groff -Tps -mandoc -c for ways to pick an alter-
+              nate format.
+
+       Depending on the selected format and the availability of printing devices, the output may need to be passed through some filter or another before being printed.
+
+       -w or --path
+              Don't actually display the man pages, but do print the location(s) of the files that would be formatted or displayed. If no argument is given: display (on stdout) the list of directories that is searched by man for man pages. If manpath  is  a  link  to
+              man, then "manpath" is equivalent to "man --path".
+
+       -W     Like -w, but print file names one per line, without additional information.  This is useful in shell commands like man -aW man | xargs ls -l
+
+CAT PAGES
+       Man  will  try to save the formatted man pages, in order to save formatting time the next time these pages are needed.  Traditionally, formatted versions of pages in DIR/manX are saved in DIR/catX, but other mappings from man dir to cat dir can be specified in
+       /private/etc/man.conf.  No cat pages are saved when the required cat directory does not exist.  No cat pages are saved when they are formatted for a line length different from 80.  No cat pages are saved when man.conf contains the line NOCACHE.
+
+       It is possible to make man suid to a user man. Then, if a cat directory has owner man and mode 0755 (only writable by man), and the cat files have owner man and mode 0644 or 0444 (only writable by man, or not writable at all), no ordinary user can  change  the
+       cat pages or put other files in the cat directory. If man is not made suid, then a cat directory should have mode 0777 if all users should be able to leave cat pages there.
+
+       The option -c forces reformatting a page, even if a recent cat page exists.
+
+HTML PAGES
+       Man will find HTML pages if they live in directories named as expected to be ".html", thus a valid name for an HTML version of the ls(1) man page would be /usr/share/man/htmlman1/ls.1.html.
+
+SEARCH PATH FOR MANUAL PAGES
+       man uses a sophisticated method of finding manual page files, based on the invocation options and environment variables, the /private/etc/man.conf configuration file, and some built in conventions and heuristics.
+
+       First of all, when the name argument to man contains a slash (/), man assumes it is a file specification itself, and there is no searching involved.
+
+       But in the normal case where name doesn't contain a slash, man searches a variety of directories for a file that could be a manual page for the topic named.
+
+       If you specify the -M pathlist option, pathlist is a colon-separated list of the directories that man searches.
+
+       If you don't specify -M but set the MANPATH environment variable, the value of that variable is the list of the directories that man searches.
+
+       If you don't specify an explicit path list with -M or MANPATH, man develops its own path list based on the contents of the configuration file /private/etc/man.conf.  The MANPATH statements in the configuration file identify particular directories to include in
+       the search path.
+
+       Furthermore, the MANPATH_MAP statements add to the search path depending on your command search path (i.e. your PATH environment variable).  For each directory that may be in the command search path, a MANPATH_MAP statement specifies a directory that should be
+       added to the search path for manual page files.  man looks at the PATH variable and adds the corresponding directories to the manual page file search path.  Thus, with the proper use of MANPATH_MAP, when you issue the command man xyz, you get a manual page for
+       the program that would run if you issued the command xyz.
+
+       In addition, for each directory in the command search path (we'll call it a "command directory") for which you do not have a MANPATH_MAP statement, man automatically looks for a manual page directory "nearby" namely as a subdirectory in the  command  directory
+       itself or in the parent directory of the command directory.
+
+       You can disable the automatic "nearby" searches by including a NOAUTOPATH statement in /private/etc/man.conf.
+
+       In  each  directory  in the search path as described above, man searches for a file named topic.section, with an optional suffix on the section number and possibly a compression suffix.  If it doesn't find such a file, it then looks in any subdirectories named
+       manN or catN where N is the manual section number.  If the file is in a catN subdirectory, man assumes it is a formatted manual page file (cat page).  Otherwise, man assumes it is unformatted.  In either case, if the filename has  a  known  compression  suffix
+       (like .gz), man assumes it is gzipped.
+
+       If you want to see where (or if) man would find the manual page for a particular topic, use the --path (-w) option.
+
+ENVIRONMENT
+       MANPATH
+              If MANPATH is set, man uses it as the path to search for manual page files.  It overrides the configuration file and the automatic search path, but is overridden by the -M invocation option.  See SEARCH PATH FOR MANUAL PAGES.
+
+       MANPL  If MANPL is set, its value is used as the display page length.  Otherwise, the entire man page will occupy one (long) page.
+
+       MANROFFSEQ
+              If MANROFFSEQ is set, its value is used to determine the set of preprocessors run before running nroff or troff.  By default, pages are passed through the tbl preprocessor before nroff.
+
+       MANSECT
+              If MANSECT is set, its value is used to determine which manual sections to search.
+
+       MANWIDTH
+              If MANWIDTH is set, its value is used as the width manpages should be displayed.  Otherwise the pages may be displayed over the whole width of your screen.
+
+       MANPAGER
+              If MANPAGER is set, its value is used as the name of the program to use to display the man page.  If not, then PAGER is used. If that has no value either, /usr/bin/less -is is used.
+
+       BROWSER
+              The name of a browser to use for displaying HTML manual pages.  If it is not set, /usr/bin/less -is is used.
+
+       HTMLPAGER
+              The command to use for rendering HTML manual pages as text.  If it is not set, /bin/cat is used.
+
+       LANG   If  LANG  is  set,  its  value  defines  the name of the subdirectory where man first looks for man pages. Thus, the command `LANG=dk man 1 foo' will cause man to look for the foo man page in .../dk/man1/foo.1, and if it cannot find such a file, then in
+              .../man1/foo.1, where ... is a directory on the search path.
+
+       NLSPATH, LC_MESSAGES, LANG
+              The environment variables NLSPATH and LC_MESSAGES (or LANG when the latter does not exist) play a role in locating the message catalog.  (But the English messages are compiled in, and for English no catalog is required.)  Note that programs like  col(1)
+              called by man also use e.g. LC_CTYPE.
+
+       PATH   PATH helps determine the search path for manual page files.  See SEARCH PATH FOR MANUAL PAGES.
+
+       SYSTEM SYSTEM is used to get the default alternate system name (for use with the -m option).
+
+BUGS
+       The -t option only works if a troff-like program is installed.
+       If you see blinking \255 or <AD> instead of hyphens, put `LESSCHARSET=latin1' in your environment.
+
+TIPS
+       If you add the line
+
+        (global-set-key [(f1)] (lambda () (interactive) (manual-entry (current-word))))
+
+       to your .emacs file, then hitting F1 will give you the man page for the library call at the current cursor position.
+
+       To get a plain text version of a man page, without backspaces and underscores, try
+
+         # man foo | col -b > foo.mantxt
+
+AUTHOR
+       John W. Eaton was the original author of man.  Zeyd M. Ben-Halim released man 1.2, and Andries Brouwer followed up with versions 1.3 thru 1.5p.  Federico Lucifredi <flucifredi@acm.org> is the current maintainer.
+
+SEE ALSO
+       apropos(1), whatis(1), less(1), groff(1), man.conf(5).
+
+
+NAME
+     ls -- list directory contents
+
+SYNOPSIS
+     ls [-ABCFGHLOPRSTUW@abcdefghiklmnopqrstuwx1%] [file ...]
+
+DESCRIPTION
+     For each operand that names a file of a type other than directory, ls displays its name as well as any requested, associated information.  For each operand that names a file of type directory, ls displays the names of files contained within that directory, as well as any requested, associated information.
+
+     If no operands are given, the contents of the current directory are displayed.  If more than one operand is given, non-directory operands are displayed first; directory and non-directory operands are sorted separately and in lexicographical order.
+
+     The following options are available:
+
+     -@      Display extended attribute keys and sizes in long (-l) output.
+
+     -1      (The numeric digit ``one''.)  Force output to be one entry per line.  This is the default when output is not to a terminal.
+
+     -A      List all entries except for . and ...  Always set for the super-user.
+
+     -a      Include directory entries whose names begin with a dot (.).
+
+     -B      Force printing of non-printable characters (as defined by ctype(3) and current locale settings) in file names as \xxx, where xxx is the numeric value of the character in octal.
+
+     -b      As -B, but use C escape codes whenever possible.
+
+     -C      Force multi-column output; this is the default when output is to a terminal.
+
+     -c      Use time when file status was last changed for sorting (-t) or long printing (-l).
+
+     -d      Directories are listed as plain files (not searched recursively).
+
+     -e      Print the Access Control List (ACL) associated with the file, if present, in long (-l) output.
+
+     -F      Display a slash (`/') immediately after each pathname that is a directory, an asterisk (`*') after each that is executable, an at sign (`@') after each symbolic link, an equals sign (`=') after each socket, a percent sign (`%') after each whiteout, and a vertical bar (`|') after each that is a FIFO.
+
+     -f      Output is not sorted.  This option turns on the -a option.
+
+     -G      Enable colorized output.  This option is equivalent to defining CLICOLOR in the environment.  (See below.)
+
+     -g      This option is only available for compatibility with POSIX; it is used to display the group name in the long (-l) format output (the owner name is suppressed).
+
+     -H      Symbolic links on the command line are followed.  This option is assumed if none of the -F, -d, or -l options are specified.
+
+     -h      When used with the -l option, use unit suffixes: Byte, Kilobyte, Megabyte, Gigabyte, Terabyte and Petabyte in order to reduce the number of digits to three or less using base 2 for sizes.
+
+     -i      For each file, print the file's file serial number (inode number).
+
+     -k      If the -s option is specified, print the file size allocation in kilobytes, not blocks.  This option overrides the environment variable BLOCKSIZE.
+
+     -L      Follow all symbolic links to final target and list the file or directory the link references rather than the link itself.  This option cancels the -P option.
+
+     -l      (The lowercase letter ``ell''.)  List in long format.  (See below.)  A total sum for all the file sizes is output on a line before the long listing.
+
+     -m      Stream output format; list files across the page, separated by commas.
+
+     -n      Display user and group IDs numerically, rather than converting to a user or group name in a long (-l) output.  This option turns on the -l option.
+
+     -O      Include the file flags in a long (-l) output.
+
+     -o      List in long format, but omit the group id.
+
+     -P      If argument is a symbolic link, list the link itself rather than the object the link references.  This option cancels the -H and -L options.
+
+     -p      Write a slash (`/') after each filename if that file is a directory.
+
+     -q      Force printing of non-graphic characters in file names as the character `?'; this is the default when output is to a terminal.
+
+     -R      Recursively list subdirectories encountered.
+
+     -r      Reverse the order of the sort to get reverse lexicographical order or the oldest entries first (or largest files last, if combined with sort by size
+
+     -S      Sort files by size
+
+     -s      Display the number of file system blocks actually used by each file, in units of 512 bytes, where partial units are rounded up to the next integer value.  If the output is to a terminal, a total sum for all the file sizes is output on a line before the listing.  The environment variable BLOCKSIZE overrides the unit size of 512 bytes.
+
+     -T      When used with the -l (lowercase letter ``ell'') option, display complete time information for the file, including month, day, hour, minute, second, and year.
+
+     -t      Sort by time modified (most recently modified first) before sorting the operands by lexicographical order.
+
+     -u      Use time of last access, instead of last modification of the file for sorting (-t) or long printing (-l).
+
+     -U      Use time of file creation, instead of last modification for sorting (-t) or long output (-l).
+
+     -v      Force unedited printing of non-graphic characters; this is the default when output is not to a terminal.
+
+     -W      Display whiteouts when scanning directories.  (-S) flag).
+
+     -w      Force raw printing of non-printable characters.  This is the default when output is not to a terminal.
+
+     -x      The same as -C, except that the multi-column output is produced with entries sorted across, rather than down, the columns.
+
+     -%      Distinguish dataless files and directories with a '%' character in long (-l) output, and don't materialize dataless directories when listing them.
+
+     The -1, -C, -x, and -l options all override each other; the last one specified determines the format used.
+
+     The -c and -u options override each other; the last one specified determines the file time used.
+
+     The -B, -b, -w, and -q options all override each other; the last one specified determines the format used for non-printable characters.
+
+     The -H, -L and -P options all override each other (either partially or fully); they are applied in the order specified.
+
+     By default, ls lists one entry per line to standard output; the exceptions are to terminals or when the -C or -x options are specified.
+
+     File information is displayed with one or more <blank>s separating the information associated with the -i, -s, and -l options.
+
+   The Long Format
+     If the -l option is given, the following information is displayed for each file: file mode, number of links, owner name, group name, number of bytes in the file, abbreviated month, day-of-month file was last modified, hour file last modified, minute file last modified, and the pathname.  In addition, for each directory whose contents are displayed, the total number of
+     512-byte blocks used by the files in the directory is displayed on a line by itself, immediately before the information for the files in the directory.  If the file or directory has extended attributes, the permissions field printed by the -l option is followed by a '@' character.  Otherwise, if the file or directory has extended security information (such as an access con-
+     trol list), the permissions field printed by the -l option is followed by a '+' character.  If the -% option is given, a '%' character follows the permissions field for dataless files and directories, possibly replacing the '@' or '+' character.
+
+     If the modification time of the file is more than 6 months in the past or future, then the year of the last modification is displayed in place of the hour and minute fields.
+
+     If the owner or group names are not a known user or group name, or the -n option is given, the numeric ID's are displayed.
+
+     If the file is a character special or block special file, the major and minor device numbers for the file are displayed in the size field.  If the file is a symbolic link, the pathname of the linked-to file is preceded by ``->''.
+
+           -     Regular file.
+
+     The next three fields are three characters each: owner permissions, group permissions, and other permissions.  Each field has three character positions:
+
+           1.   If r, the file is readable; if -, it is not readable.
+
+           2.   If w, the file is writable; if -, it is not writable.
+
+           3.   The first of the following that applies:
+
+                      S     If in the owner permissions, the file is not executable and set-user-ID mode is set.  If in the group permissions, the file is not executable and set-group-ID mode is set.
+
+                      s     If in the owner permissions, the file is executable and set-user-ID mode is set.  If in the group permissions, the file is executable and setgroup-ID mode is set.
+
+                      x     The file is executable or the directory is searchable.
+
+                      -     The file is neither readable, writable, executable, nor set-user-ID nor set-group-ID mode, nor sticky.  (See below.)
+
+                These next two apply only to the third character in the last group (other permissions).
+
+                      T     The sticky bit is set (mode 1000), but not execute or search permission.  (See chmod(1) or sticky(8).)
+
+                      t     The sticky bit is set (mode 1000), and is searchable or executable.  (See chmod(1) or sticky(8).)
+
+EXAMPLES
+     The following is how to do an ls listing sorted by increasing size
+
+           ls -lrS
+
+DIAGNOSTICS
+     The ls utility exits 0 on success, and >0 if an error occurs.
+
+ENVIRONMENT
+     The following environment variables affect the execution of ls:
+
+     BLOCKSIZE       If the environment variable BLOCKSIZE is set, the block counts (see -s) will be displayed in units of that size block.
+
+     CLICOLOR        Use ANSI color sequences to distinguish file types.  See LSCOLORS below.  In addition to the file types mentioned in the -F option some extra attributes (setuid bit set, etc.) are also displayed.  The colorization is dependent on a terminal type with the proper termcap(5) capabilities.  The default ``cons25'' console has the proper capabilities, but to dis-
+                     play the colors in an xterm(1), for example, the TERM variable must be set to ``xterm-color''.  Other terminal types may require similar adjustments.  Colorization is silently disabled if the output isn't directed to a terminal unless the CLICOLOR_FORCE variable is defined.
+
+     CLICOLOR_FORCE  Color sequences are normally disabled if the output isn't directed to a terminal.  This can be overridden by setting this flag.  The TERM variable still needs to reference a color capable terminal however otherwise it is not possible to determine which color sequences to use.
+
+     COLUMNS         If this variable contains a string representing a decimal integer, it is used as the column position width for displaying multiple-text-column output.  The ls utility calculates how many pathname text columns to display based on the width provided.  (See -C and -x.)
+
+     LANG            The locale to use when determining the order of day and month in the long -l format output.  See environ(7) for more information.
+
+     LSCOLORS        The value of this variable describes what color to use for which attribute when colors are enabled with CLICOLOR.  This string is a concatenation of pairs of the format fb, where f is the foreground color and b is the background color.
+
+                     The color designators are as follows:
+
+                           a     black
+                           b     red
+                           c     green
+                           d     brown
+                           e     blue
+                           f     magenta
+                           g     cyan
+                           h     light grey
+                           A     bold black, usually shows up as dark grey
+                           B     bold red
+                           C     bold green
+                           D     bold brown, usually shows up as yellow
+                           E     bold blue
+                           F     bold magenta
+                           G     bold cyan
+                           H     bold light grey; looks like bright white
+                           x     default foreground or background
+
+                     Note that the above are standard ANSI colors.  The actual display may differ depending on the color capabilities of the terminal in use.
+
+                     The order of the attributes are as follows:
+
+                           1.   directory
+                           2.   symbolic link
+                           3.   socket
+                           4.   pipe
+                           5.   executable
+                           6.   block special
+                           7.   character special
+                           8.   executable with setuid bit set
+                           9.   executable with setgid bit set
+                           10.  directory writable to others, with sticky bit
+                           11.  directory writable to others, without sticky bit
+
+                     The default is "exfxcxdxbxegedabagacad", i.e. blue foreground and default background for regular directories, black foreground and red background for setuid executables, etc.
+
+     LS_COLWIDTHS    If this variable is set, it is considered to be a colon-delimited list of minimum column widths.  Unreasonable and insufficient widths are ignored (thus zero signifies a dynamically sized column).  Not all columns have changeable widths.  The fields are, in order: inode, block count, number of links, user name, group name, flags, file size, file name.
+
+     TERM            The CLICOLOR functionality depends on a terminal type with color capabilities.
+
+     TZ              The timezone to use when displaying dates.  See environ(7) for more information.
+
+COMPATIBILITY
+     The group field is now automatically included in the long listing for files in order to be compatible with the IEEE Std 1003.2 (``POSIX.2'') specification.
+
+LEGACY DESCRIPTION
+     In legacy mode, the -f option does not turn on the -a option and the -g, -n, and -o options do not turn on the -l option.
+
+     Also, the -o option causes the file flags to be included in a long (-l) output; there is no -O option.
+
+     When -H is specified (and not overridden by -L or -P) and a file argument is a symlink that resolves to a non-directory file, the output will reflect the nature of the link, rather than that of the file.  In legacy operation, the output will describe the file.
+
+     For more information about legacy mode, see compat(5).
+
+SEE ALSO
+     chflags(1), chmod(1), sort(1), xterm(1), compat(5), termcap(5), symlink(7), sticky(8)
+
+STANDARDS
+     The ls utility conforms to IEEE Std 1003.1-2001 (``POSIX.1'').
+
+HISTORY
+     An ls command appeared in Version 1 AT&T UNIX.
+
+BUGS
+     To maintain backward compatibility, the relationships between the many options are quite complex.
+
+
+NAME
+     builtin, !, %, ., :, @, {, }, alias, alloc, bg, bind, bindkey, break, breaksw, builtins, case, cd, chdir, command, complete, continue, default, dirs, do, done, echo, echotc, elif, else, end, endif, endsw, esac, eval, exec, exit, export, false, fc, fg, filetest, fi, for, foreach, getopts, glob, goto, hash, hashstat, history, hup, if, jobid, jobs, kill, limit, local, log,
+     login, logout, ls-F, nice, nohup, notify, onintr, popd, printenv, pushd, pwd, read, readonly, rehash, repeat, return, sched, set, setenv, settc, setty, setvar, shift, source, stop, suspend, switch, telltc, test, then, time, times, trap, true, type, ulimit, umask, unalias, uncomplete, unhash, unlimit, unset, unsetenv, until, wait, where, which, while -- shell built-in com-
+     mands
+
+SYNOPSIS
+     builtin [-options] [args ...]
+
+DESCRIPTION
+     Shell builtin commands are commands that can be executed within the running shell's process.  Note that, in the case of csh(1) builtin commands, the command is executed in a subshell if it occurs as any component of a pipeline except the last.
+
+     If a command specified to the shell contains a slash ``/'', the shell will not execute a builtin command, even if the last component of the specified command matches the name of a builtin command.  Thus, while specifying ``echo'' causes a builtin command to be executed under shells that support the echo builtin command, specifying ``/bin/echo'' or ``./echo'' does not.
+
+     While some builtin commands may exist in more than one shell, their operation may be different under each shell which supports them.  Below is a table which lists shell builtin commands, the standard shells that support them and whether they exist as standalone utilities.
+
+     Only builtin commands for the csh(1) and sh(1) shells are listed here.  Consult a shell's manual page for details on the operation of its builtin commands.  Beware that the sh(1) manual page, at least, calls some of these commands ``built-in commands'' and some of them ``reserved words''.  Users of other shells may need to consult an info(1) page or other sources of documen-
+     tation.
+
+     Commands marked ``No**'' under External do exist externally, but are implemented as scripts using a builtin command of the same name.
+
+           Command       External    csh(1)    sh(1)
+           !             No          No        Yes
+           %             No          Yes       No
+           .             No          No        Yes
+           :             No          Yes       Yes
+           @             No          Yes       Yes
+           {             No          No        Yes
+           }             No          No        Yes
+           alias         No**        Yes       Yes
+           alloc         No          Yes       No
+           bg            No**        Yes       Yes
+           bind          No          No        Yes
+           bindkey       No          Yes       No
+           break         No          Yes       Yes
+           breaksw       No          Yes       No
+           builtin       No          No        Yes
+           builtins      No          Yes       No
+           case          No          Yes       Yes
+           cd            No**        Yes       Yes
+           chdir         No          Yes       Yes
+           command       No**        No        Yes
+           complete      No          Yes       No
+           continue      No          Yes       Yes
+           default       No          Yes       No
+           dirs          No          Yes       No
+           do            No          No        Yes
+           done          No          No        Yes
+           echo          Yes         Yes       Yes
+           echotc        No          Yes       No
+           elif          No          No        Yes
+           else          No          Yes       Yes
+           end           No          Yes       No
+           endif         No          Yes       No
+           endsw         No          Yes       No
+           esac          No          No        Yes
+           eval          No          Yes       Yes
+           exec          No          Yes       Yes
+           exit          No          Yes       Yes
+           export        No          No        Yes
+           false         Yes         No        Yes
+           fc            No**        No        Yes
+           fg            No**        Yes       Yes
+           filetest      No          Yes       No
+           fi            No          No        Yes
+           for           No          No        Yes
+           foreach       No          Yes       No
+           getopts       No**        No        Yes
+           glob          No          Yes       No
+           goto          No          Yes       No
+           hash          No          No        Yes
+           hashstat      No          Yes       No
+           history       No          Yes       No
+           hup           No          Yes       No
+           if            No          Yes       Yes
+           jobid         No          No        Yes
+           jobs          No**        Yes       Yes
+           kill          Yes         Yes       No
+           limit         No          Yes       No
+           local         No          No        Yes
+           log           No          Yes       No
+           login         Yes         Yes       No
+           logout        No          Yes       No
+           ls-F          No          Yes       No
+           nice          Yes         Yes       No
+           nohup         Yes         Yes       No
+           notify        No          Yes       No
+           onintr        No          Yes       No
+           popd          No          Yes       No
+           printenv      Yes         Yes       No
+           pushd         No          Yes       No
+           pwd           Yes         No        Yes
+           read          No**        No        Yes
+           readonly      No          No        Yes
+           rehash        No          Yes       No
+           repeat        No          Yes       No
+           return        No          No        Yes
+           sched         No          Yes       No
+           set           No          Yes       Yes
+           setenv        No          Yes       No
+           settc         No          Yes       No
+           setty         No          Yes       No
+           setvar        No          No        Yes
+           shift         No          Yes       Yes
+           source        No          Yes       No
+           stop          No          Yes       No
+           suspend       No          Yes       No
+           switch        No          Yes       No
+           telltc        No          Yes       No
+           test          Yes         No        Yes
+           then          No          No        Yes
+           time          Yes         Yes       No
+           times         No          No        Yes
+           trap          No          No        Yes
+           true          Yes         No        Yes
+           type          No          No        Yes
+           ulimit        No          No        Yes
+           umask         No**        Yes       Yes
+           unalias       No**        Yes       Yes
+           uncomplete    No          Yes       No
+           unhash        No          Yes       No
+           unlimit       No          Yes       No
+           unset         No          Yes       Yes
+           unsetenv      No          Yes       No
+           until         No          No        Yes
+           wait          No**        Yes       Yes
+           where         No          Yes       No
+           which         Yes         Yes       No
+           while         No          Yes       Yes
+
+SEE ALSO
+     csh(1), dash(1), echo(1), false(1), info(1), kill(1), login(1), nice(1), nohup(1), printenv(1), pwd(1), sh(1), test(1), time(1), true(1), which(1), zsh(1)
+
+HISTORY
+     The builtin manual page first appeared in FreeBSD 3.4.
+
+AUTHORS
+     This manual page was written by Sheldon Hearn <sheldonh@FreeBSD.org>.
+
+
+NAME
+     head -- display first lines of a file
+
+SYNOPSIS
+     head [-n count | -c bytes] [file ...]
+
+DESCRIPTION
+     This filter displays the first count lines or bytes of each of the specified files, or of the standard input if no files are specified.  If count is omitted it defaults to 10.
+
+     If more than a single file is specified, each file is preceded by a header consisting of the string ``==> XXX <=='' where ``XXX'' is the name of the file.
+
+EXIT STATUS
+     The head utility exits 0 on success, and >0 if an error occurs.
+
+SEE ALSO
+     tail(1)
+
+HISTORY
+     The head command appeared in PWB UNIX.
+
+
+NAME
+     sort -- sort or merge records (lines) of text and binary files
+
+SYNOPSIS
+     sort [-bcCdfghiRMmnrsuVz] [-k field1[,field2]] [-S memsize] [-T dir] [-t char] [-o output] [file ...]
+     sort --help
+     sort --version
+
+DESCRIPTION
+     The sort utility sorts text and binary files by lines.  A line is a record separated from the subsequent record by a newline (default) or NUL '\0' character (-z option).  A record can contain any printable or unprintable characters.  Comparisons are based on one or more sort keys extracted from each line of input, and are performed lexicographically, according to the current
+     locale's collating rules and the specified command-line options that can tune the actual sorting behavior.  By default, if keys are not given, sort uses entire lines for comparison.
+
+     The command line options are as follows:
+
+     -c, --check, -C, --check=silent|quiet
+             Check that the single input file is sorted.  If the file is not sorted, sort produces the appropriate error messages and exits with code 1, otherwise returns 0.  If -C or --check=silent is specified, sort produces no output.  This is a "silent" version of -c.
+
+     -m, --merge
+             Merge only.  The input files are assumed to be pre-sorted.  If they are not sorted the output order is undefined.
+
+     -o output, --output=output
+             Print the output to the output file instead of the standard output.
+
+     -S size, --buffer-size=size
+             Use size for the maximum size of the memory buffer.  Size modifiers %,b,K,M,G,T,P,E,Z,Y can be used.  If a memory limit is not explicitly specified, sort takes up to about 90% of available memory.  If the file size is too big to fit into the memory buffer, the temporary disk files are used to perform the sorting.
+
+     -T dir, --temporary-directory=dir
+             Store temporary files in the directory dir.  The default path is the value of the environment variable TMPDIR or /var/tmp if TMPDIR is not defined.
+
+     -u, --unique
+             Unique keys.  Suppress all lines that have a key that is equal to an already processed one.  This option, similarly to -s, implies a stable sort.  If used with -c or -C, sort also checks that there are no lines with duplicate keys.
+
+     -s      Stable sort.  This option maintains the original record order of records that have an equal key.  This is a non-standard feature, but it is widely accepted and used.
+
+     --version
+             Print the version and silently exits.
+
+     --help  Print the help text and silently exits.
+
+     The following options override the default ordering rules.  When ordering options appear independently of key field specifications, they apply globally to all sort keys.  When attached to a specific key (see -k), the ordering options override all global ordering options for the key they are attached to.
+
+     -b, --ignore-leading-blanks
+             Ignore leading blank characters when comparing lines.
+
+     -d, --dictionary-order
+             Consider only blank spaces and alphanumeric characters in comparisons.
+
+     -f, --ignore-case
+             Convert all lowercase characters to their uppercase equivalent before comparison, that is, perform case-independent sorting.
+
+     -g, --general-numeric-sort, --sort=general-numeric
+             Sort by general numerical value.  As opposed to -n, this option handles general floating points.  It has a more permissive format than that allowed by -n but it has a significant performance drawback.
+
+     -h, --human-numeric-sort, --sort=human-numeric
+             Sort by numerical value, but take into account the SI suffix, if present.  Sort first by numeric sign (negative, zero, or positive); then by SI suffix (either empty, or `k' or `K', or one of `MGTPEZY', in that order); and finally by numeric value.  The SI suffix must immediately follow the number.  For example, '12345K' sorts before '1M', because M is "larger" than
+             K.  This sort option is useful for sorting the output of a single invocation of 'df' command with -h or -H options (human-readable).
+
+     -i, --ignore-nonprinting
+             Ignore all non-printable characters.
+
+     -M, --month-sort, --sort=month
+             Sort by month abbreviations.  Unknown strings are considered smaller than the month names.
+
+     -n, --numeric-sort, --sort=numeric
+             Sort fields numerically by arithmetic value.  Fields are supposed to have optional blanks in the beginning, an optional minus sign, zero or more digits (including decimal point and possible thousand separators).
+
+     -R, --random-sort, --sort=random
+             Sort by a random order.  This is a random permutation of the inputs except that the equal keys sort together.  It is implemented by hashing the input keys and sorting the hash values.  The hash function is chosen randomly.  The hash function is randomized by /dev/random content, or by file content if it is specified by --random-source.  Even if multiple sort fields
+             are specified, the same random hash function is used for all of them.
+
+     -r, --reverse
+             Sort in reverse order.
+
+     -V, --version-sort
+             Sort version numbers.  The input lines are treated as file names in form PREFIX VERSION SUFFIX, where SUFFIX matches the regular expression "(.([A-Za-z~][A-Za-z0-9~]*)?)*".  The files are compared by their prefixes and versions (leading zeros are ignored in version numbers, see example below).  If an input string does not match the pattern, then it is compared using
+             the byte compare function.  All string comparisons are performed in C locale, the locale environment setting is ignored.
+
+             Example:
+
+             $ ls sort* | sort -V
+
+             sort-1.022.tgz
+
+             sort-1.23.tgz
+
+             sort-1.23.1.tgz
+
+             sort-1.024.tgz
+
+             sort-1.024.003.
+
+             sort-1.024.003.tgz
+
+             sort-1.024.07.tgz
+
+             sort-1.024.009.tgz
+
+     The treatment of field separators can be altered using these options:
+
+     -b, --ignore-leading-blanks
+             Ignore leading blank space when determining the start and end of a restricted sort key (see -k).  If -b is specified before the first -k option, it applies globally to all key specifications.  Otherwise, -b can be attached independently to each field argument of the key specifications.  -b.
+
+     -k field1[,field2], --key=field1[,field2]
+             Define a restricted sort key that has the starting position field1, and optional ending position field2 of a key field.  The -k option may be specified multiple times, in which case subsequent keys are compared when earlier keys compare equal.  The -k option replaces the obsolete options +pos1 and -pos2, but the old notation is also supported.
+
+     -t char, --field-separator=char
+             Use char as a field separator character.  The initial char is not considered to be part of a field when determining key offsets.  Each occurrence of char is significant (for example, ``charchar'' delimits an empty field).  If -t is not specified, the default field separator is a sequence of blank space characters, and consecutive blank spaces do not delimit an empty
+             field, however, the initial blank space is considered part of a field when determining key offsets.  To use NUL as field separator, use -t '\0'.
+
+     -z, --zero-terminated
+             Use NUL as record separator.  By default, records in the files are supposed to be separated by the newline characters.  With this option, NUL ('\0') is used as a record separator character.
+
+     Other options:
+
+     --batch-size=num
+             Specify maximum number of files that can be opened by sort at once.  This option affects behavior when having many input files or using temporary files.  The default value is 16.
+
+     --compress-program=PROGRAM
+             Use PROGRAM to compress temporary files.  PROGRAM must compress standard input to standard output, when called without arguments.  When called with argument -d it must decompress standard input to standard output.  If PROGRAM fails, sort must exit with error.  An example of PROGRAM that can be used here is bzip2.
+
+     --random-source=filename
+             In random sort, the file content is used as the source of the 'seed' data for the hash function choice.  Two invocations of random sort with the same seed data will use the same hash function and will produce the same result if the input is also identical.  By default, file /dev/random is used.
+
+     --debug
+             Print some extra information about the sorting process to the standard output.
+
+     --parallel
+             Set the maximum number of execution threads.  Default number equals to the number of CPUs.
+
+     --files0-from=filename
+             Take the input file list from the file filename.  The file names must be separated by NUL (like the output produced by the command "find ... -print0").
+
+     --radixsort
+             Try to use radix sort, if the sort specifications allow.  The radix sort can only be used for trivial locales (C and POSIX), and it cannot be used for numeric or month sort.  Radix sort is very fast and stable.
+
+     --mergesort
+             Use mergesort.  This is a universal algorithm that can always be used, but it is not always the fastest.
+
+     --qsort
+             Try to use quick sort, if the sort specifications allow.  This sort algorithm cannot be used with -u and -s.
+
+     --heapsort
+             Try to use heap sort, if the sort specifications allow.  This sort algorithm cannot be used with -u and -s.
+
+     --mmap  Try to use file memory mapping system call.  It may increase speed in some cases.
+
+     The following operands are available:
+
+     file    The pathname of a file to be sorted, merged, or checked.  If no file operands are specified, or if a file operand is -, the standard input is used.
+
+     A field is defined as a maximal sequence of characters other than the field separator and record separator (newline by default).  Initial blank spaces are included in the field unless -b has been specified; the first blank space of a sequence of blank spaces acts as the field separator and is included in the field (unless -t is specified).  For example, all blank spaces at
+     the beginning of a line are considered to be part of the first field.
+
+     Fields are specified by the -k field1[,field2] command-line option.  If field2 is missing, the end of the key defaults to the end of the line.
+
+     The arguments field1 and field2 have the form m.n (m,n > 0) and can be followed by one or more of the modifiers b, d, f, i, n, g, M and r, which correspond to the options discussed above.  When b is specified it applies only to field1 or field2 where it is specified while the rest of the modifiers apply to the whole key field regardless if they are specified only with field1
+     or field2 or both.  A field1 position specified by m.n is interpreted as the nth character from the beginning of the mth field.  A missing .n in field1 means `.1', indicating the first character of the mth field; if the -b option is in effect, n is counted from the first non-blank character in the mth field; m.1b refers to the first non-blank character in the mth field.  1.n
+     refers to the nth character from the beginning of the line; if n is greater than the length of the line, the field is taken to be empty.
+
+     nth positions are always counted from the field beginning, even if the field is shorter than the number of specified positions.  Thus, the key can really start from a position in a subsequent field.
+
+     A field2 position specified by m.n is interpreted as the nth character (including separators) from the beginning of the mth field.  A missing .n indicates the last character of the mth field; m = 0 designates the end of a line.  Thus the option -k v.x,w.y is synonymous with the obsolete option +v-1.x-1 -w-1.y; when y is omitted, -k v.x,w is synonymous with +v-1.x-1 -w.0.
+     The obsolete +pos1 -pos2 option is still supported, except for -w.0b, which has no -k equivalent.
+
+ENVIRONMENT
+     LC_COLLATE  Locale settings to be used to determine the collation for sorting records.
+
+     LC_CTYPE    Locale settings to be used to case conversion and classification of characters, that is, which characters are considered whitespaces, etc.
+
+     LC_MESSAGES
+                 Locale settings that determine the language of output messages that sort prints out.
+
+     LC_NUMERIC  Locale settings that determine the number format used in numeric sort.
+
+     LC_TIME     Locale settings that determine the month format used in month sort.
+
+     LC_ALL      Locale settings that override all of the above locale settings.  This environment variable can be used to set all these settings to the same value at once.
+
+     LANG        Used as a last resort to determine different kinds of locale-specific behavior if neither the respective environment variable, nor LC_ALL are set.
+
+     TMPDIR      Path to the directory in which temporary files will be stored.  Note that TMPDIR may be overridden by the -T option.
+
+     GNUSORT_NUMERIC_COMPATIBILITY
+                 If defined -t will not override the locale numeric symbols, that is, thousand separators and decimal separators.  By default, if we specify -t with the same symbol as the thousand separator or decimal point, the symbol will be treated as the field separator.  Older behavior was less definite; the symbol was treated as both field separator and numeric separator,
+                 simultaneously.  This environment variable enables the old behavior.
+
+     GNUSORT_COMPATIBLE_BLANKS
+                 Use 'space' symbols as field separators (as modern GNU sort does).
+
+FILES
+     /var/tmp/.bsdsort.PID.*           Temporary files.
+     /dev/random                       Default seed file for the random sort.
+
+EXIT STATUS
+     The sort utility shall exit with one of the following values:
+
+     0     Successfully sorted the input files or if used with -c or -C, the input file already met the sorting criteria.
+     1     On disorder (or non-uniqueness) with the -c or -C options.
+     2     An error occurred.
+
+SEE ALSO
+     comm(1), join(1), uniq(1)
+
+STANDARDS
+     The sort utility is compliant with the IEEE Std 1003.1-2008 (``POSIX.1'') specification.
+
+     The flags [-ghRMSsTVz] are extensions to the POSIX specification.
+
+     All long options are extensions to the specification, some of them are provided for compatibility with GNU versions and some of them are own extensions.
+
+     The old key notations +pos1 and -pos2 come from older versions of sort and are still supported but their use is highly discouraged.
+
+HISTORY
+     A sort command first appeared in Version 3 AT&T UNIX.
+
+AUTHORS
+     Gabor Kovesdan <gabor@FreeBSD.org>,
+
+     Oleg Moskalenko <mom040267@gmail.com>
+
+NOTES
+     This implementation of sort has no limits on input line length (other than imposed by available memory) or any restrictions on bytes allowed within lines.
+
+     The performance depends highly on locale settings, efficient choice of sort keys and key complexity.  The fastest sort is with locale C, on whole lines, with option -s.  In general, locale C is the fastest, then single-byte locales follow and multi-byte locales as the slowest but the correct collation order is always respected.  As for the key specification, the simpler to
+     process the lines the faster the search will be.
+
+     When sorting by arithmetic value, using -n results in much better performance than -g so its use is encouraged whenever possible.
+
+
+NAME
+     link, ln -- make links
+
+SYNOPSIS
+     ln [-Ffhinsv] source_file [link_name]
+     ln [-Ffhinsv] source_file ... link_dirname
+     link source_file link_name
+
+DESCRIPTION
+     The ln utility creates a new directory entry (linked file) which has the same modes as the original file.  It is useful for maintaining multiple copies of a file in many places at once without using up storage for the ``copies''; instead, a link ``points'' to the original copy.  There are two types of links; hard links and symbolic links.  How a link ``points'' to a file is
+     one of the differences between a hard and symbolic link.
+
+     The options are as follows:
+
+     -F    If the proposed link (link_name) already exists and is a directory, then remove it so that the link may occur.  The -F option should be used with either -f or -i options.  If none is specified, -f is implied.  The -F option is a no-op unless -s option is specified.
+
+     -h    If the link_name or link_dirname is a symbolic link, do not follow it.  This is most useful with the -f option, to replace a symlink which may point to a directory.
+
+     -f    If the proposed link (link_name) already exists, then unlink it so that the link may occur.  (The -f option overrides any previous -i options.)
+
+     -i    Cause ln to write a prompt to standard error if the proposed link exists.  If the response from the standard input begins with the character `y' or `Y', then unlink the proposed link so that the link may occur.  Otherwise, do not attempt the link.  (The -i option overrides any previous -f options.)
+
+     -n    Same as -h, for compatibility with other ln implementations.
+
+     -s    Create a symbolic link.
+
+     -v    Cause ln to be verbose, showing files as they are processed.
+
+     By default, ln makes hard links.  A hard link to a file is indistinguishable from the original directory entry; any changes to a file are effectively independent of the name used to reference the file.  Hard links may not normally refer to directories and may not span file systems.
+
+     A symbolic link contains the name of the file to which it is linked.  The referenced file is used when an open(2) operation is performed on the link.  A stat(2) on a symbolic link will return the linked-to file; an lstat(2) must be done to obtain information about the link.  The readlink(2) call may be used to read the contents of a symbolic link.  Symbolic links may span
+     file systems and may refer to directories.
+
+     Given one or two arguments, ln creates a link to an existing file source_file.  If link_name is given, the link has that name; link_name may also be a directory in which to place the link; otherwise it is placed in the current directory.  If only the directory is specified, the link will be made to the last component of source_file.
+
+     Given more than two arguments, ln makes links in link_dirname to all the named source files.  The links made will have the same name as the files being linked to.
+
+     When the utility is called as link, exactly two arguments must be supplied, neither of which may specify a directory.  No options may be supplied in this simple mode of operation, which performs a link(2) operation using the two passed arguments.
+
+COMPATIBILITY
+     The -h, -i, -n and -v options are non-standard and their use in scripts is not recommended.  They are provided solely for compatibility with other ln implementations.
+
+     The -F option is FreeBSD extention and should not be used in portable scripts.
+
+SEE ALSO
+     link(2), lstat(2), readlink(2), stat(2), symlink(2), symlink(7)
+
+STANDARDS
+     The ln utility conforms to IEEE Std 1003.2-1992 (``POSIX.2'').
+
+     The simplified link command conforms to Version 2 of the Single UNIX Specification (``SUSv2'').
+
+HISTORY
+     An ln command appeared in Version 1 AT&T UNIX.
+
+
+NAME
+     whoami -- display effective user id
+
+SYNOPSIS
+     whoami
+
+DESCRIPTION
+     The whoami utility has been obsoleted by the id(1) utility, and is equivalent to ``id -un''.  The command ``id -p'' is suggested for normal interactive use.
+
+     The whoami utility displays your effective user ID as a name.
+
+EXIT STATUS
+     The whoami utility exits 0 on success, and >0 if an error occurs.
+
+SEE ALSO
+     id(1)
+
+
+NAME
+     biff -- be notified if mail arrives and who it is from
+
+SYNOPSIS
+     biff [n | y | b]
+
+DESCRIPTION
+     The biff utility informs the system whether you want to be notified on your terminal when mail arrives.
+
+     Affected is the first terminal associated with the standard input, standard output or standard error file descriptor, in that order.  Thus, it is possible to use the redirection facilities of a shell to toggle the notification for other terminals than the one biff runs on.
+
+     The following options are available:
+
+     n       Disable notification.
+
+     y       Enable header notification.
+
+     b       Enable bell notification.
+
+     When header notification is enabled, the header and first few lines of the message will be printed on your terminal whenever mail arrives.  A ``biff y'' command is often included in the file .login or .profile to be executed at each login.
+
+     When bell notification is enabled, only two bell characters (ASCII \007) will be printed on your terminal whenever mail arrives.
+
+     If no arguments are given, biff displays the present notification status of the terminal to the standard output.
+
+     The biff utility operates asynchronously.  For synchronous notification use the MAIL variable of sh(1) or the mail variable of csh(1).
+
+DIAGNOSTICS
+     The biff utility exits with one of the following values:
+
+     0       Notification is enabled.
+
+     1       Notification is disabled.
+
+     >1      An error occurred.
+
+COMPATIBILITY
+     Previous versions of the biff utility affected the terminal attached to standard error without first trying the standard input or output devices.
+
+SEE ALSO
+     csh(1), mail(1), sh(1), comsat(8)
+
+HISTORY
+     The biff command appeared in 4.0BSD.  It was named after the dog of Heidi Stettner.  He died in August 1993, at 15.
+
+
+NAME
+     su -- substitute user identity
+
+SYNOPSIS
+     su [-] [-flm] [login [args]]
+
+DESCRIPTION
+     The su utility requests appropriate user credentials via PAM and switches to that user ID (the default user is the superuser).  A shell is then executed.
+
+     PAM is used to set the policy su(1) will use.  In particular, by default only users in the ``admin'' or ``wheel'' groups can switch to UID 0 (``root'').  This group requirement may be changed by modifying the ``pam_group'' section of /etc/pam.d/su.  See pam_group(8) for details on how to modify this setting.
+
+     By default, the environment is unmodified with the exception of USER, HOME, and SHELL.  HOME and SHELL are set to the target login's default values.  USER is set to the target login, unless the target login has a user ID of 0, in which case it is unmodified.  The invoked shell is the one belonging to the target login.  This is the traditional behavior of su.
+
+     The options are as follows:
+
+     -f      If the invoked shell is csh(1), this option prevents it from reading the ``.cshrc'' file.
+
+     -l      Simulate a full login.  The environment is discarded except for HOME, SHELL, PATH, TERM, and USER.  HOME and SHELL are modified as above.  USER is set to the target login.  PATH is set to ``/bin:/usr/bin''.  TERM is imported from your current environment.  The invoked shell is the target login's, and su will change directory to the target login's home directory.
+
+     -       (no letter) The same as -l.
+
+     -m      Leave the environment unmodified.  The invoked shell is your login shell, and no directory changes are made.  As a security precaution, if the target user's shell is a non-standard shell (as defined by getusershell(3)) and the caller's real uid is non-zero, su will fail.
+
+     The -l (or -) and -m options are mutually exclusive; the last one specified overrides any previous ones.
+
+     If the optional args are provided on the command line, they are passed to the login shell of the target login.  Note that all command line arguments before the target login name are processed by su itself, everything after the target login name gets passed to the login shell.
+
+     By default (unless the prompt is reset by a startup file) the super-user prompt is set to ``#'' to remind one of its awesome power.
+
+ENVIRONMENT
+     Environment variables used by su:
+
+     HOME  Default home directory of real user ID unless modified as specified above.
+
+     PATH  Default search path of real user ID unless modified as specified above.
+
+     TERM  Provides terminal type which may be retained for the substituted user ID.
+
+     USER  The user ID is always the effective ID (the target user ID) after an su unless the user ID is 0 (root).
+
+FILES
+     /etc/pam.d/su  PAM configuration for su.
+
+EXAMPLES
+     su man -c catman
+            Runs the command catman as user man.  You will be asked for man's password unless your real UID is 0.
+     su man -c 'catman /usr/share/man /usr/local/man'
+            Same as above, but the target command consists of more than a single word and hence is quoted for use with the -c option being passed to the shell.  (Most shells expect the argument to -c to be a single word).
+     su -l foo
+            Simulate a login for user foo.
+     su - foo
+            Same as above.
+     su -   Simulate a login for root.
+
+SEE ALSO
+     csh(1), sh(1), group(5), passwd(5), environ(7), pam_group(8)
+
+HISTORY
+     A su command appeared in Version 1 AT&T UNIX.
+
+
+NAME
+     compress, uncompress -- compress and expand data
+
+SYNOPSIS
+     compress [-fv] [-b bits] [file ...]
+     compress -c [-b bits] [file ...]
+     uncompress [-fv] [file ...]
+     uncompress -c [file ...]
+
+DESCRIPTION
+     The compress utility reduces the size of files using adaptive Lempel-Ziv coding.  Each file is renamed to the same name plus the extension .Z.  A file argument with a .Z extension will be ignored except it will cause an error exit after other arguments are processed.  If compression would not reduce the size of a file, the file is ignored.
+
+     The uncompress utility restores compressed files to their original form, renaming the files by deleting the .Z extensions.  A file specification need not include the file's .Z extension.  If a file's name in its file system does not have a .Z extension, it will not be uncompressed and it will cause an error exit after other arguments are processed.
+
+     If renaming the files would cause files to be overwritten and the standard input device is a terminal, the user is prompted (on the standard error output) for confirmation.  If prompting is not possible or confirmation is not received, the files are not overwritten.
+
+     As many of the modification time, access time, file flags, file mode, user ID, and group ID as allowed by permissions are retained in the new file.
+
+     If no files are specified or a file argument is a single dash (`-'), the standard input is compressed or uncompressed to the standard output.  If either the input and output files are not regular files, the checks for reduction in size and file overwriting are not performed, the input file is not removed, and the attributes of the input file are not retained in the output
+     file.
+
+     The options are as follows:
+
+     -b bits  The code size (see below) is limited to bits, which must be in the range 9..16.  The default is 16.
+
+     -c       Compressed or uncompressed output is written to the standard output.  No files are modified.  The -v option is ignored.  Compression is attempted even if the results will be larger than the original.
+
+     -f       Files are overwritten without prompting for confirmation.  Also, for compress, files are compressed even if they are not actually reduced in size.
+
+     -v       Print the percentage reduction of each file.  Ignored by uncompress or if the -c option is also used.
+
+     The compress utility uses a modified Lempel-Ziv algorithm.  Common substrings in the file are first replaced by 9-bit codes 257 and up.  When code 512 is reached, the algorithm switches to 10-bit codes and continues to use more bits until the limit specified by the -b option or its default is reached.
+
+     After the limit is reached, compress periodically checks the compression ratio.  If it is increasing, compress continues to use the existing code dictionary.  However, if the compression ratio decreases, compress discards the table of substrings and rebuilds it from scratch.  This allows the algorithm to adapt to the next "block" of the file.
+
+     The -b option is unavailable for uncompress since the bits parameter specified during compression is encoded within the output, along with a magic number to ensure that neither decompression of random data nor recompression of compressed data is attempted.
+
+     The amount of compression obtained depends on the size of the input, the number of bits per code, and the distribution of common substrings.  Typically, text such as source code or English is reduced by 50-60%.  Compression is generally much better than that achieved by Huffman coding (as used in the historical command pack), or adaptive Huffman coding (as used in the his-
+     torical command compact), and takes less time to compute.
+
+EXIT STATUS
+     The compress and uncompress utilities exit 0 on success, and >0 if an error occurs.
+
+     The compress utility exits 2 if attempting to compress a file would not reduce its size and the -f option was not specified and if no other error occurs.
+
+SEE ALSO
+     gunzip(1), gzexe(1), gzip(1), zcat(1), zmore(1), znew(1)
+
+     Welch, Terry A., "A Technique for High Performance Data Compression", IEEE Computer, 17:6, pp. 8-19, June, 1984.
+
+STANDARDS
+     The compress and uncompress utilities conform to IEEE Std 1003.1-2001 (``POSIX.1'').
+
+HISTORY
+     The compress command appeared in 4.3BSD.
+
+BUGS
+     Some of these might be considered otherwise-undocumented features.
+
+     compress: If the utility does not compress a file because doing so would not reduce its size, and a file of the same name except with an .Z extension exists, the named file is not really ignored as stated above; it causes a prompt to confirm the overwriting of the file with the extension.  If the operation is confirmed, that file is deleted.
+
+     uncompress: If an empty file is compressed (using -f), the resulting .Z file is also empty.  That seems right, but if uncompress is then used on that file, an error will occur.
+
+     Both utilities: If a `-' argument is used and the utility prompts the user, the standard input is taken as the user's reply to the prompt.
+
+     Both utilities: If the specified file does not exist, but a similarly-named one with (for compress) or without (for uncompress) a .Z extension does exist, the utility will waste the user's time by not immediately emitting an error message about the missing file and continuing.  Instead, it first asks for confirmation to overwrite the existing file and then does not overwrite
+     it.
